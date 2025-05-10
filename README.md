@@ -1,1 +1,120 @@
-# my-web
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Red Button Click Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px;
+    }
+
+    .game-container {
+      text-align: center;
+      margin-right: 60px;
+    }
+
+    #redButton {
+      background-color: red;
+      color: white;
+      border: none;
+      padding: 20px 40px;
+      font-size: 24px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #counter {
+      margin-top: 20px;
+      font-size: 20px;
+    }
+
+    .leaderboard {
+      border-left: 2px solid #ccc;
+      padding-left: 40px;
+      min-width: 200px;
+    }
+
+    .leaderboard h2 {
+      margin-top: 0;
+    }
+
+    .leaderboard ol {
+      padding-left: 20px;
+    }
+
+    #playerNameDisplay {
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="game-container">
+    <div id="playerNameDisplay"></div>
+    <button id="redButton">Click Me!</button>
+    <div id="counter">Clicks: 0</div>
+  </div>
+
+  <div class="leaderboard">
+    <h2>Leaderboard</h2>
+    <ol id="leaderboardList"></ol>
+  </div>
+
+  <script>
+    let playerName = prompt("Enter your name:");
+    while (!playerName || playerName.trim() === "") {
+      playerName = prompt("Please enter a valid name:");
+    }
+
+    document.getElementById('playerNameDisplay').textContent = `Player: ${playerName}`;
+    let clickCount = 0;
+
+    const button = document.getElementById('redButton');
+    const counterDisplay = document.getElementById('counter');
+    const leaderboardList = document.getElementById('leaderboardList');
+
+    button.addEventListener('click', () => {
+      clickCount++;
+      counterDisplay.textContent = `Clicks: ${clickCount}`;
+      updateLeaderboard();
+    });
+
+    function updateLeaderboard() {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+
+      const existingPlayer = leaderboard.find(entry => entry.name === playerName);
+      if (existingPlayer) {
+        existingPlayer.score = Math.max(existingPlayer.score, clickCount);
+      } else {
+        leaderboard.push({ name: playerName, score: clickCount });
+      }
+
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 100); // Keep only top 100
+
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+
+      renderLeaderboard(leaderboard);
+    }
+
+    function renderLeaderboard(leaderboard) {
+      leaderboardList.innerHTML = '';
+      leaderboard.forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.textContent = `${entry.name}: ${entry.score}`;
+        leaderboardList.appendChild(li);
+      });
+    }
+
+    // Load leaderboard on page load
+    const savedLeaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    renderLeaderboard(savedLeaderboard);
+  </script>
+
+</body>
+</html>
